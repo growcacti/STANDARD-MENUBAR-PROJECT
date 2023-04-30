@@ -5,7 +5,7 @@ from tkinter.colorchooser import askcolor
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 from tkinter import filedialog
 
-from tkinter import Button, Frame, Entry, END
+from tkinter import Button, Frame, Entry, END, Canvas
 
 from tkinter.scrolledtext import ScrolledText 
 
@@ -19,7 +19,9 @@ class MenuBar(tk.Menu):
         tk.Menu.__init__(self, parent)
         self.parent= parent
         self.textwidget = ScrolledText(self.parent, height=50, width=100, bg='white',bd=10)
-        self.textwidget.grid(row=10, column=0)
+        self.textwidget.grid(row=10, column=0,sticky="nsew")
+        self.canvas = tk.Canvas(self.parent, width=100, height=10,bg='lavender')
+        self.canvas.grid(row=25, column=0)
         self.menubar = tk.Menu(self.parent, tearoff=False)
         self.file_menu = tk.Menu(self.menubar)
         self.edit_menu = tk.Menu(self.menubar)
@@ -46,7 +48,13 @@ class MenuBar(tk.Menu):
         self.add_cascade(label="View", menu=self.view_menu)
         self.view_menu.add_command(label="Backgrounbd Color", compound="left", underline=0,  command=lambda: self.change_bg())
         self.view_menu.add_command(label="Foreground Color",compound="left", underline=0, command=lambda: self.change_fg())
+        self.view_menu.add_command(label="Highlight Line",compound="left", underline=0, command=lambda: self.highlight_line())
+        self.view_menu.add_command(label="Foreground Color",compound="left", underline=0, command=lambda: self.change_fg())
         
+
+
+        self.char_detect()
+       
     def cleartags(self):
         self.textwidget.tag_config('found', foreground ='black', background = 'white')
 
@@ -62,8 +70,10 @@ class MenuBar(tk.Menu):
         except:
             print("No previous action")
 
+    def select_all(self, event=None):
+        self.textwidget.tag_add("sel", "1.0", tk.END)
+        return "break"
 
-    
 
     def copy(self, event=None):
         self.clipboard_clear()
@@ -78,11 +88,7 @@ class MenuBar(tk.Menu):
         text = self.selection_get(selection='CLIPBOARD')
         self.insert('insert', text)
 
-    def select_all(self, event):
-        text.tag_add(SEL, "1.0", END)
-        text.mark_set(INSERT, "1.0")
-        text.see(INSERT)
-        return 'break'
+
 
     def quit(self):
         sys.exit(0)
@@ -241,7 +247,40 @@ class MenuBar(tk.Menu):
             self.textwidget.tag_config('found', foreground ='green', background = 'yellow')
         self.replace_btn = tk.Button(top, text="Find & Replace", bd=8,command=replacer)
         self.replace_btn.grid(row=8, column=1)
-        entry1.focus_set()            
+        entry1.focus_set()
+##
+##    def rowcol(self,ev=None):
+##        top = Toplevel()
+##        count = self.textwidget.count("1.0", "end")
+##        e1=tk.Entry(top,bd=12,bg="light yellow")
+##        e1.grid(row=1, column=1)
+##        e1.insert(0, count)
+##       
+    def char_detect(self):
+        pass
+##        top = Toplevel()
+##        count = len(self.textwidget.get("1.0", "end"))
+##        e1=tk.Entry(top,bd=12,bg="light yellow")
+##        e1.grid(row=1, column=1)
+##        e1.insert(0,count)
+##        print(count)
+    def highlight_line(self,interval=100):
+        self.textwidget.tag_remove("active_line", "1.0", tk.END)
+        self.textwidget.tag_add("active_line", "insert linestart", "insert lineend+12c")
+        self.textwidget.after(interval, self.toggle_highlight)
+
+    def toggle_highlight(self, event=None):
+
+        val = hltln.get()
+
+        undo_highlight() if not val else highlight_line()
+
+
+    
+    def undo_highlight(self):
+
+          self.textwidget.tag_remove("active_line", "1.0", tk.END)
+
 class App(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
